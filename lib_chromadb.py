@@ -55,27 +55,3 @@ def query(query_embedding, k):
         c = docs[i]
         out.append([t, c])
     return out
-
-#temporarily for mettaclaw:
-def import_ltm_file(filename):
-    if not isinstance(filename, str):
-        raise TypeError("filename must be a str")
-    inserted_ids = []
-    with open(filename, "r", encoding="utf-8") as f:
-        for lineno, line in enumerate(f, 1):
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                time_str = line.split('("', 1)[1].split('" "', 1)[0]
-                content_start = line.find('" "') + 3
-                content_end = line.rfind('" (')
-                content_str = line[content_start:content_end]
-                vector_str = line[content_end + 3:]
-                vector_str = vector_str[:-2].strip()   # remove final ))
-                embedding = [float(x) for x in vector_str.split()] if vector_str else []
-                #inserted_ids.append((content_str, embedding, time_str))
-                remember(content_str, embedding, time_str)
-            except Exception as e:
-                raise ValueError(f"parse error in {filename}:{lineno}: {e}") from e
-    return inserted_ids
