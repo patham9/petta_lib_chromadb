@@ -82,3 +82,28 @@ def query_with_ids(query_embedding, k):
         c = docs[i]
         out.append([ids[i], t, c])
     return out
+
+def query_with_ids_and_dists(query_embedding, k):
+    """
+    query_embedding: list[float]
+    returns: list of items
+    """
+    if not isinstance(query_embedding, list) or not all(isinstance(x, (int, float)) for x in query_embedding):
+        raise TypeError("query_embedding must be a list of floats")
+    if not isinstance(k, int) or k <= 0:
+        raise ValueError("k must be > 0")
+    res = COLLECTION.query(
+        query_embeddings=[query_embedding],
+        n_results=k,
+        include=["documents", "metadatas", "distances"],
+    )
+    ids = res["ids"][0]
+    docs = res.get("documents", [[]])[0]
+    metas = res.get("metadatas", [[]])[0]
+    dists = res.get("distances", [[]])[0]
+    out = []
+    for i in range(len(ids)):
+        t = metas[i].get("time") if metas[i] else None
+        c = docs[i]
+        out.append([ids[i], t, c, dists[i]])
+    return out
