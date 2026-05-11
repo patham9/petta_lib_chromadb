@@ -111,7 +111,7 @@ def query_with_ids_and_dists(query_embedding, k):
 def query_by_ids(item_ids):
     """
     item_ids: list[str]
-    returns: list of [id, time, content]
+    returns: list of [id, time, content] in requested id order
     """
     if not isinstance(item_ids, list) or not all(isinstance(x, str) for x in item_ids):
         raise TypeError("item_ids must be a list of str")
@@ -121,15 +121,15 @@ def query_by_ids(item_ids):
         ids=item_ids,
         include=["documents", "metadatas"],
     )
+    found = {}
     ids = res.get("ids", [])
     docs = res.get("documents", [])
     metas = res.get("metadatas", [])
-    out = []
     for i in range(len(ids)):
         t = metas[i].get("time") if metas[i] else None
         c = docs[i]
-        out.append([ids[i], t, c])
-    return out
+        found[ids[i]] = [ids[i], t, c]
+    return [found[item_id] for item_id in item_ids if item_id in found]
 
 def query_by_id(item_id):
     """
