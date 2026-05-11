@@ -140,3 +140,14 @@ def query_by_id(item_id):
         raise TypeError("item_id must be a str")
     items = query_by_ids([item_id])
     return items[0] if items else None
+
+def ids_by_time(t):
+    """
+    t: timestamp
+    returns: list[str]
+    """
+    res = COLLECTION.get(
+        where={"time": t},
+        include=[],
+    )
+    return res.get("ids", [])
