@@ -107,3 +107,36 @@ def query_with_ids_and_dists(query_embedding, k):
         c = docs[i]
         out.append([ids[i], t, c, dists[i]])
     return out
+
+def query_by_id(item_ids):
+    """
+    item_ids: list[str]
+    returns: list of [id, time, content]
+    """
+    if not isinstance(item_ids, list) or not all(isinstance(x, str) for x in item_ids):
+        raise TypeError("item_ids must be a list of str")
+    if not item_ids:
+        return []
+    res = COLLECTION.get(
+        ids=item_ids,
+        include=["documents", "metadatas"],
+    )
+    ids = res.get("ids", [])
+    docs = res.get("documents", [])
+    metas = res.get("metadatas", [])
+    out = []
+    for i in range(len(ids)):
+        t = metas[i].get("time") if metas[i] else None
+        c = docs[i]
+        out.append([ids[i], t, c])
+    return out
+
+def query_by_id_one(item_id):
+    """
+    item_id: str
+    returns: [id, time, content] or None
+    """
+    if not isinstance(item_id, str):
+        raise TypeError("item_id must be a str")
+    items = query_by_id([item_id])
+    return items[0] if items else None
