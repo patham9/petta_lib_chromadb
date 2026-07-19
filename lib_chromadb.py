@@ -151,3 +151,44 @@ def ids_by_time(t):
         include=[],
     )
     return res.get("ids", [])
+
+def link_episode(item_id, linked_time):
+    """
+    item_id: UUID of the memory being modified
+    linked_time: timestamp of the linked memory
+    """
+    if not isinstance(item_id, str):
+        raise TypeError("item_id must be a str")
+    res = COLLECTION.get(
+        ids=[item_id],
+        include=["metadatas"],
+    )
+    if not res.get("ids"):
+        raise KeyError(f"memory not found: {item_id}")
+    metadata = dict(res["metadatas"][0] or {})
+    linked_memories = metadata.get("linkedEpisodes", [])
+    if linked_time not in linked_memories:
+        linked_memories.append(linked_time)
+        metadata["linkedEpisodes"] = linked_memories
+        COLLECTION.update(
+            ids=[item_id],
+            metadatas=[metadata],
+        )
+    return item_id
+
+def query_linked_episodes(item_id):
+    """
+    item_id: UUID
+    returns: list of linked timestamps
+    """
+    if not isinstance(item_id, str):
+        raise TypeError("item_id must be a str")
+    res = COLLECTION.get(
+        ids=[item_id],
+        include=["metadatas"],
+    )
+    if not res.get("ids"):
+        return []
+    metadata = res.get("metadatas", [{}])[0] or {}
+    return metadata.get("linkedEpisodes", [])
+
