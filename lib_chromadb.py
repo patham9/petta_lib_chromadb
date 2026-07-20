@@ -176,6 +176,33 @@ def link_episode(item_id, linked_time):
         )
     return item_id
 
+def unlink_episode(item_id, linked_time):
+    """
+    item_id: UUID of the memory being modified
+    linked_time: timestamp of the linked memory
+    """
+    if not isinstance(item_id, str):
+        raise TypeError("item_id must be a str")
+    res = COLLECTION.get(
+        ids=[item_id],
+        include=["metadatas"],
+    )
+    if not res.get("ids"):
+        raise KeyError(f"memory not found: {item_id}")
+    metadata = dict(res["metadatas"][0] or {})
+    linked_memories = metadata.get("linkedEpisodes", [])
+    if linked_time in linked_memories:
+        linked_memories.remove(linked_time)
+        if linked_memories:
+            metadata["linkedEpisodes"] = linked_memories
+        else:
+            metadata.pop("linkedEpisodes", None)
+        COLLECTION.update(
+            ids=[item_id],
+            metadatas=[metadata],
+        )
+    return item_id
+
 def query_linked_episodes(item_id):
     """
     item_id: UUID
